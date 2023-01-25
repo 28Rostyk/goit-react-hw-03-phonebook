@@ -8,14 +8,25 @@ const { Component } = require('react');
 
 class App extends Component {
   state = {
-    contacts: [
-      { id: nanoid(4), name: 'Rosie Simpson', number: '459-12-56' },
-      { id: nanoid(4), name: 'Hermione Kline', number: '443-89-12' },
-      { id: nanoid(4), name: 'Eden Clements', number: '645-17-79' },
-      { id: nanoid(4), name: 'Annie Copeland', number: '227-91-26' },
-    ],
+    contacts: [],
     filter: '',
   };
+
+  componentDidMount() {
+    const contacts = localStorage.getItem('contacts');
+    const parsedContact = JSON.parse(contacts);
+
+    if (parsedContact) {
+      this.setState({ contacts: parsedContact });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { contacts } = this.state;
+    if (contacts !== prevState.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+    }
+  }
 
   addContact = (name, number) => {
     const { contacts } = this.state;
@@ -66,11 +77,19 @@ class App extends Component {
 
         <div className={css.ContactsBox}>
           <h2>Contacts</h2>
-          <Filter value={filter} onChange={this.changeFilter} />
-          <ContactList
-            contacts={visibleContact}
-            onDeleteContact={this.deleteContact}
-          />
+          {contacts.length > 0 && (
+            <Filter value={filter} onChange={this.changeFilter} />
+          )}
+          {contacts.length > 0 ? (
+            <ContactList
+              contacts={visibleContact}
+              onDeleteContact={this.deleteContact}
+            />
+          ) : (
+            <p className={css.notificationMessage}>
+              There are no contacts in your phonebook
+            </p>
+          )}
         </div>
       </div>
     );
